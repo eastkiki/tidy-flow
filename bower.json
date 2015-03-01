@@ -1,15 +1,12 @@
 {
   "name": "tidy-flow",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "homepage": "https://github.com/eastkiki/tidy-flow",
   "authors": [
-    "wilddog17",
-    "dduskim",
-    "eastkiki",
-    "ragiragi"
+    "eastkiki"
   ],
   "description": "Tidy Javascript flow library",
-  "main": "observer.js",
+  "main": "tidy-flow.js",
   "keywords": [
     "flow",
     "task",
@@ -25,9 +22,12 @@
     "karma.conf.js",
     "package.json",
     "Gruntfile.js",
-    "README.md"
+    "README.md",
+    "test",
+    "tests"
   ],
-  "dependencies": {
-    "simple-inheritance": "*"
-  }
+  "moduleType": [
+    "globals",
+    "node"
+  ]
 }

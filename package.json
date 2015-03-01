@@ -15,6 +15,7 @@
     "grunt-contrib-jshint": "^0.11.0",
     "grunt-contrib-uglify": "^0.8.0"
   },
+  "main" : "tidy-flow.js",
   "scripts": {
     "test": "node build.js",
     "build": "node build.js",
