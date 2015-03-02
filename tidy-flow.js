@@ -19,7 +19,7 @@
             this.funcList.push(function (next) {
                 var args = Array.prototype.slice.call(arguments, 1);
                 var result = callback.apply(null, args);
-                next.apply(null, result);
+                next.apply(null, [null].concat(result));
             });
             return this;
         },
