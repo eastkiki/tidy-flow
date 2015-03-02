@@ -6,6 +6,27 @@
 	</head>
 	<body>
 		<h1>tidy flow test page</h1>
+		
+		<script>
+			var result = [];
+            var flow = new tidy.Flow();
+            flow.passive(function () {
+                var arg = 1;
+                result.push(arg);
+                return arg;
+            }).passive(function (arg) {
+                arg += 1;
+                result.push(arg);
+                return arg;
+            }).passive(function (arg) {
+                arg += 1;
+                result.push(arg);
+                return arg;
+            }).end(function (err, arg) {
+                console.log(arg);
+                console.log(result);
+            });
 
+		</script>
 	</body>
 </html>
