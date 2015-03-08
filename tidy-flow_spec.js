@@ -8,7 +8,7 @@ describe("tidy-flow.js", function () {
         it('should flow process 1, 2, 3', function () {
             
             var result = [];
-            var flow = new tidy.Flow();
+            var flow = new TidyFlow();
             flow.passive(function () {
                 result.push(1);
             }).passive(function () {
@@ -26,7 +26,7 @@ describe("tidy-flow.js", function () {
         it('should flow process with arguments', function () {
             
             var result = [];
-            var flow = new tidy.Flow();
+            var flow = new TidyFlow();
             flow.passive(function () {
                 var arg = 1;
                 result.push(arg);
@@ -49,22 +49,22 @@ describe("tidy-flow.js", function () {
         });
     });
 
-    describe('flow active(async)', function () {
+    describe('flow then(async)', function () {
         it('should flow process 1, 2, 3', function (done) {
             
             var result = [];
-            var flow = new tidy.Flow();
-            flow.active(function (next) {
+            var flow = new TidyFlow();
+            flow.then(function (next) {
                 window.setTimeout(function () {
                     result.push(1);
                     next();
                 }, 200);
-            }).active(function (next, arg) {
+            }).then(function (next, arg) {
                 window.setTimeout(function () {
                     result.push(2);
                     next();
                 }, 200);
-            }).active(function (next, arg) {
+            }).then(function (next, arg) {
                 window.setTimeout(function () {
                     result.push(3);
                     next();
@@ -80,20 +80,20 @@ describe("tidy-flow.js", function () {
         it('should flow process with arguments', function (done) {
             
             var result = [];
-            var flow = new tidy.Flow();
-            flow.active(function (next) {
-                var arg = 1;
-                result.push(arg);
-                window.setTimeout(function () {
-                    next(null, arg);
-                }, 200);
-            }).active(function (next, arg) {
+            var flow = new TidyFlow(0);
+            flow.then(function (next, arg) {
                 arg += 1;
                 result.push(arg);
                 window.setTimeout(function () {
                     next(null, arg);
                 }, 200);
-            }).active(function (next, arg) {
+            }).then(function (next, arg) {
+                arg += 1;
+                result.push(arg);
+                window.setTimeout(function () {
+                    next(null, arg);
+                }, 200);
+            }).then(function (next, arg) {
                 arg += 1;
                 result.push(arg);
                 window.setTimeout(function () {
@@ -123,7 +123,7 @@ describe("tidy-flow.js", function () {
             
             expect(timerCallback).not.toHaveBeenCalled();
 
-            var flow = new tidy.Flow();
+            var flow = new TidyFlow();
             flow.delay(1000).passive(function (next) {
                 timerCallback();
             }).end(function (err, arg) {
@@ -133,5 +133,101 @@ describe("tidy-flow.js", function () {
             jasmine.clock().tick(1001);
             expect(timerCallback).toHaveBeenCalled();
         }, 1100);
+    });
+
+    describe('flow control', function () {
+        var timerCallback1,
+            timerCallback2,
+            timerCallback3;
+
+        beforeEach(function() {
+            
+            timerCallback1 = jasmine.createSpy("timerCallback1");
+            timerCallback2 = jasmine.createSpy("timerCallback2");
+            timerCallback3 = jasmine.createSpy("timerCallback3");
+
+            jasmine.clock().install();
+        });
+
+
+        it('should pause after 1s', function (done) {
+            
+            expect(timerCallback1).not.toHaveBeenCalled();
+
+            var flow = new TidyFlow();
+            flow.delay(1000)
+                .passive(function (next) {
+                    timerCallback1();
+                })
+                .pause()
+                .passive(function (next) {
+                    timerCallback2();
+                })
+                .end(function (err, arg) {
+                    done();
+                });
+
+            jasmine.clock().tick(1001);
+            expect(timerCallback1).toHaveBeenCalled();
+            expect(timerCallback2).not.toHaveBeenCalled();
+        }, 2100);
+
+        it('should replay after pause', function (done) {
+            
+            expect(timerCallback1).not.toHaveBeenCalled();
+
+            var flow = new TidyFlow();
+            flow.delay(1000)
+                .passive(function (next) {
+                    timerCallback1();
+                })
+                .pause()
+                .passive(function (next) {
+                    timerCallback2();
+                })
+                .end(function (err, arg) {
+                    done();
+                });
+
+            window.setTimeout(function () {
+                flow.play();
+            }, 1000);
+
+            jasmine.clock().tick(1001);
+            expect(timerCallback1).toHaveBeenCalled();
+            expect(timerCallback2).not.toHaveBeenCalled();
+
+            jasmine.clock().tick(1001);
+            expect(timerCallback2).toHaveBeenCalled();
+        }, 2100);
+
+        it('should not play after stop', function (done) {
+            
+            expect(timerCallback1).not.toHaveBeenCalled();
+
+            var flow = new TidyFlow();
+            flow.delay(1000)
+                .passive(function (next) {
+                    timerCallback1();
+                })
+                .passive(function (next) {
+                    timerCallback2();
+                })
+                .end(function (err, arg) {
+                    done();
+                });
+
+            flow.stop();
+            window.setTimeout(function () {
+                flow.play();
+            }, 1000);
+
+            jasmine.clock().tick(1001);
+            expect(timerCallback1).not.toHaveBeenCalled();
+            expect(timerCallback2).not.toHaveBeenCalled();
+
+            jasmine.clock().tick(1001);
+            expect(timerCallback2).not.toHaveBeenCalled();
+        }, 2100);
     });
 });
